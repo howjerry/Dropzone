@@ -1,0 +1,111 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section head{
+    <link href="@Url.Content("~/dist/dropzone/basic.min.css")" rel="stylesheet" />
+    <link href="@Url.Content("~/dist/dropzone/dropzone.min.css")" rel="stylesheet" />
+    <style>
+        .dz-image img {
+            height: auto;
+            width: 100%;
+        }
+    </style>
+}
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="#">Home</a></li>
+                    <li class="breadcrumb-item active">Base</li>
+                </ol>
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <!-- AREA CHART -->
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title">Base</h3>
+
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            <button type="button" class="btn btn-tool" data-card-widget="remove"><i class="fas fa-times"></i></button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <form class="dropzone" action="@Url.Action("Upload","Home")" id="app">
+                        </form>
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+                <!-- /.card -->
+            </div>
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+
+
+@section scripts{
+
+    <script src="@Url.Content("~/dist/dropzone/dropzone.min.js")"></script>
+    <script>
+        Dropzone.options.app = {
+            paramName: "file",//自訂檔案上傳 input name
+            dictDefaultMessage: "Drop files here or click to upload.",//自訂區塊文字
+            addRemoveLinks: true,//移除檔案按鈕
+            autoProcessQueue: true,//自動執行 processQueue
+            uploadMultiple: true,//多個檔案上傳
+            parallelUploads: 10,//最多上傳數量
+            acceptedFiles: "image/jpeg,image/png,image/gif", //限制類型
+            init: function () {
+                var mockFile = {
+                    name: 'images.jpg',
+                    upload: { uuid: 'c2f81963-dff5-4ecf-a6d5-b55425973b8c' },
+                    size: 15514,
+                };
+
+                this.emit("addedfile", mockFile);
+                this.emit("complete", mockFile);
+                this.emit("thumbnail", mockFile, '@Url.Content("~/Image/c2f81963-dff5-4ecf-a6d5-b55425973b8c.jpg")');
+            },
+            sending: function (file, xhr, formData) {
+                formData.append("uuid", file.upload.uuid);
+            },
+            complate: function (file) { },
+            removedfile: function (file) {
+                $.post('@Url.Action("Remove","Home")?f=' + file.upload.uuid + '.' + /[^.]+$/.exec(file.name))
+                    .done(function (data) {
+                        if (file.previewElement != null && file.previewElement.parentNode != null) {
+                            file.previewElement.parentNode.removeChild(file.previewElement);
+                        }
+                        swal.fire('Delete File', '刪除成功', 'success');
+                    })
+                    .fail(function (data) {
+                        swal.fire('Error', '請見錯誤訊息記錄檔', 'error');
+                    });
+            },
+            error: function (file) {
+                var res = eval('(' + file.xhr.responseText + ')');
+                swal.fire('Error', res.message, 'error');
+            },
+            success: function (file) {
+                var res = eval('(' + file.xhr.responseText + ')');
+                swal.fire('Success', '上傳成功', 'success');
+            },
+        };
+    </script>
+}
