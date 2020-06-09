@@ -46,8 +46,8 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        <form class="dropzone" action="@Url.Action("Upload","Home")" id="app">
-                        </form>
+                        <div class="dropzone" id="app">
+                        </div>
                     </div>
                     <!-- /.card-body -->
                 </div>
@@ -64,6 +64,7 @@
     <script src="@Url.Content("~/dist/dropzone/dropzone.min.js")"></script>
     <script>
         Dropzone.options.app = {
+            url:'@Url.Action("Upload","Multiple")',
             paramName: "file",//自訂檔案上傳 input name
             dictDefaultMessage: "Drop files here or click to upload.",//自訂區塊文字
             addRemoveLinks: true,//移除檔案按鈕
@@ -84,6 +85,11 @@
             },
             sending: function (file, xhr, formData) {
                 formData.append("uuid", file.upload.uuid);
+            },
+            sendingmultiple: function (files, xhr, formData) {
+                $.each(files, function (key, el) {
+                    formData.append('uuid['+ key +']', el.upload.uuid);
+                });
             },
             complate: function (file) { },
             removedfile: function (file) {
