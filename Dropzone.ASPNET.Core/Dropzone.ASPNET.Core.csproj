@@ -4,4 +4,36 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="wwwroot\plugins\filterizr\**" />
+    <Content Remove="wwwroot\plugins\filterizr\**" />
+    <EmbeddedResource Remove="wwwroot\plugins\filterizr\**" />
+    <None Remove="wwwroot\plugins\filterizr\**" />
+    <TypeScriptCompile Remove="wwwroot\plugins\filterizr\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="wwwroot\plugins\fullcalendar-bootstrap\main.d.ts" />
+    <Content Remove="wwwroot\plugins\fullcalendar-daygrid\main.d.ts" />
+    <Content Remove="wwwroot\plugins\fullcalendar-interaction\main.d.ts" />
+    <Content Remove="wwwroot\plugins\fullcalendar-timegrid\main.d.ts" />
+    <Content Remove="wwwroot\plugins\fullcalendar\main.d.ts" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="3.9.5">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.1.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <TypeScriptCompile Include="wwwroot\plugins\fullcalendar-bootstrap\main.d.ts" />
+    <TypeScriptCompile Include="wwwroot\plugins\fullcalendar-daygrid\main.d.ts" />
+    <TypeScriptCompile Include="wwwroot\plugins\fullcalendar-interaction\main.d.ts" />
+    <TypeScriptCompile Include="wwwroot\plugins\fullcalendar-timegrid\main.d.ts" />
+    <TypeScriptCompile Include="wwwroot\plugins\fullcalendar\main.d.ts" />
+  </ItemGroup>
+
 </Project>

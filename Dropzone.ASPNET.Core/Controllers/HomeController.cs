@@ -1,37 +1,66 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using Dropzone.ASPNET.Core.Models;
+using System;
+using System.IO;
 
 namespace Dropzone.ASPNET.Core.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
-
-        public HomeController(ILogger<HomeController> logger)
+        private readonly IWebHostEnvironment _hostEnvironment;
+        public HomeController(IWebHostEnvironment hostEnvironment)
         {
-            _logger = logger;
+            _hostEnvironment = hostEnvironment;
         }
-
         public IActionResult Index()
         {
             return View();
         }
 
-        public IActionResult Privacy()
+        [HttpPost]
+        public IActionResult Upload(IFormFile file, string uuid)
         {
-            return View();
+            try
+            {
+                var baseDir = Path.Combine(_hostEnvironment.WebRootPath, "Upload");
+
+                if (!Directory.Exists(baseDir))
+                    Directory.CreateDirectory(baseDir);
+
+                var filePath = Path.Combine(baseDir, uuid + Path.GetExtension(file.FileName));
+
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    file.CopyToAsync(fileStream);
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500);
+            }
+
+            return Json(new { message = "Success" });
         }
 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
+        [HttpPost]
+        public IActionResult Remove(string f)
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            try
+            {
+                var fileName = Path.Combine(_hostEnvironment.WebRootPath, "Upload", f);
+                if (System.IO.File.Exists(fileName))
+                {
+                    System.IO.File.Delete(fileName);
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500);
+            }
+
+
+            return Ok();
         }
     }
 }

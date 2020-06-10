@@ -1,0 +1,174 @@
+﻿
+@section head{
+    <link href="@Url.Content("~/dist/dropzone/basic.min.css")" rel="stylesheet" />
+    <link href="@Url.Content("~/dist/dropzone/dropzone.min.css")" rel="stylesheet" />
+    <style>
+        .dz-image img {
+            height: auto;
+            width: 100%;
+        }
+    </style>
+}
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="#">Home</a></li>
+                    <li class="breadcrumb-item active">Forms</li>
+                </ol>
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <!-- AREA CHART -->
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title">Form Example</h3>
+                    </div>
+
+                    <form class="form-horizontal" id="form">
+                        @Html.AntiForgeryToken()
+                        <div class="card-body">
+                            <div class="form-group row">
+                                <label for="inputEmail3" class="col-sm-2 col-form-label">Email</label>
+                                <div class="col-sm-10">
+                                    <input type="email" name="Email" class="form-control" id="inputEmail3" placeholder="Email">
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="inputPassword3" class="col-sm-2 col-form-label">Password</label>
+                                <div class="col-sm-10">
+                                    <input type="password" name="Password" class="form-control" id="inputPassword3" placeholder="Password">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="dropzone" id="app">
+                        </div>
+                        <!-- /.card-body -->
+                        <div class="card-footer text-right">
+                            <button type="submit" class="btn btn-info" id="send">Submit</button>
+                        </div>
+                        <!-- /.card-footer -->
+                    </form>
+                    <!-- /.card-body -->
+                </div>
+                <!-- /.card -->
+            </div>
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+
+
+@section scripts{
+
+    <script src="@Url.Content("~/dist/dropzone/dropzone.min.js")"></script>
+    <script>
+        Dropzone.autoDiscover = false;
+
+        $(function () {
+            var app = new Dropzone('#app', {
+                paramName:'files',
+                url: '@Url.Action("Upload","Forms")',
+                addRemoveLinks: true,
+                autoProcessQueue: false,
+                uploadMultiple: true,
+                init: function () {
+
+                    var mockFile = {
+                        name: 'images.jpg',
+                        upload: { uuid: 'c2f81963-dff5-4ecf-a6d5-b55425973b8c' },
+                        size: 15514,
+                    };
+
+                    this.emit("addedfile", mockFile);
+                    this.emit("complete", mockFile);
+                    this.emit("thumbnail", mockFile, '@Url.Content("~/Image/c2f81963-dff5-4ecf-a6d5-b55425973b8c.jpg")');
+                },
+            });
+
+            app.on("sendingmultiple", function (files, xhr, formData) {
+
+                $.each(files, function (key, el) {
+                    formData.append('UUIDs[' + key + ']', el.upload.uuid);
+                });
+
+                var data = $('#form').serializeArray();
+
+                $.each(data, function (key, el) {
+                    formData.append(el.name, el.value);
+                });
+            });
+            app.on("complete", function (file) {
+                var res = eval('(' + file.xhr.responseText + ')');
+                swal.fire('Success', '上傳成功', 'success');
+            });
+            app.on("removedfile", function (file) {
+                $.post('@Url.Action("Remove","Home")?f=' + file.upload.uuid + '.' + /[^.]+$/.exec(file.name))
+                    .done(function (data) { })
+                    .fail(function (data) { });
+            });
+
+
+            $('#form').on('submit', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                let app = Dropzone.forElement('#app');
+                if (app.getQueuedFiles().length > 0) {
+
+                    app.processQueue();
+
+                } else {
+                    var formData = $('#form').serializeObject();
+
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("Upload","Forms")',
+                        data: formData,
+                        success: function (data) {
+                            swal.fire('Success', '建檔成功', 'success');
+                        }
+                    });
+                }
+            });
+        });
+
+        $.fn.serializeObject = function () {
+            var o = {};
+            var a = this.serializeArray();
+            $.each(a, function () {
+                if (o[this.name]) {
+                    if (!o[this.name].push) {
+                        o[this.name] = [o[this.name]];
+                    }
+                    o[this.name].push(this.value || '');
+                } else {
+                    o[this.name] = this.value || '';
+                }
+            });
+            return o;
+        };
+        @*$('#send').click(function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("Upload","Forms")',
+                data: $('#form').serialize(),
+                success: function (data) {
+
+                }
+            });
+        });*@
+    </script>
+}
